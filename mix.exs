@@ -34,6 +34,8 @@ defmodule Staticfs.MixProject do
     [
       {:phoenix, "~> 1.7.6"},
       {:phoenix_ecto, "~> 4.4"},
+      {:fly_rpc, "~> 0.2.0"},
+      {:libcluster, "~> 3.3"},
       {:ecto_sql, "~> 3.10"},
       {:ecto_sqlite3, ">= 0.0.0"},
       {:phoenix_html, "~> 3.3"},

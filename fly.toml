@@ -8,23 +8,24 @@ primary_region = "gru"
 kill_signal = "SIGTERM"
 # swap_size_mb = 512
 
-[deploy]
-  release_command = "/app/bin/migrate"
+# [deploy]
+#   release_command = "/app/bin/migrate"
 
 [env]
+  PRIMARY_REGION = "gru"
   PHX_HOST = "elixir-cdn-litefs.fly.dev"
-  PORT = "8080"
+  PORT = "4000"
 
 [mounts]
   source = "litefs"
   destination = "/var/lib/litefs"
 
 [http_service]
-  internal_port = 8080
+  internal_port = 4000
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ["app"]
   [http_service.concurrency]
     type = "connections"

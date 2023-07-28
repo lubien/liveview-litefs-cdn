@@ -4,9 +4,9 @@ defmodule StaticfsWeb.PageLive do
   alias Staticfs.Cdn
 
   def handle_params(_params, _uri, socket) do
-    {:ok, site} = Cdn.create_site(%{
+    {:ok, site} = Fly.rpc_primary(Cdn, :create_site, [%{
       name: to_string(Ecto.UUID.generate())
-    })
+    }])
 
     socket =
       socket
@@ -52,11 +52,16 @@ defmodule StaticfsWeb.PageLive do
           for path <- paths do
             path = to_string(path)
             name = String.replace(path, "#{dest_path}/", "")
-            Cdn.create_files(%{
+            # Cdn.create_files(%{
+            #   site_id: site.id,
+            #   name: name,
+            #   content: File.read!(path)
+            # })
+            Fly.rpc_primary(Cdn, :create_files, [%{
               site_id: site.id,
               name: name,
               content: File.read!(path)
-            })
+            }])
           end
 
           {:ok, {dest_path, paths}}

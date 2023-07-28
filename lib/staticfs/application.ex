@@ -7,7 +7,13 @@ defmodule Staticfs.Application do
 
   @impl true
   def start(_type, _args) do
+    Staticfs.Release.migrate()
+
+    topologies = Application.get_env(:libcluster, :topologies) || []
+
     children = [
+      {Fly.RPC, []},
+      {Cluster.Supervisor, [topologies, [name: Staticfs.ClusterSupervisor]]},
       # Start the Telemetry supervisor
       StaticfsWeb.Telemetry,
       # Start the Ecto repository
