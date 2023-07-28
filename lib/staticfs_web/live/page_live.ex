@@ -16,9 +16,18 @@ defmodule StaticfsWeb.PageLive do
     {:noreply, socket}
   end
 
+  def handle_event("file-selected", _params, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("upload", _params, socket) do
+    {:noreply, socket}
+  end
+
   def handle_progress(:dir, entry, socket) do
+    cwd_dest = Path.join(File.cwd!(), "projects")
+    |> IO.inspect(label: "#{__MODULE__}:#{__ENV__.line} #{DateTime.utc_now}", limit: :infinity)
     if entry.done? do
-      cwd_dest = Path.join(File.cwd!(), "projects")
       File.mkdir_p!(cwd_dest)
 
       [{dest_path, _paths}] =
@@ -32,6 +41,7 @@ defmodule StaticfsWeb.PageLive do
         end)
 
       assigns = %{dir_name: Path.basename(dest_path)}
+      |> IO.inspect(label: "#{__MODULE__}:#{__ENV__.line} #{DateTime.utc_now}", limit: :infinity)
 
       {:noreply, assign(socket, assigns)}
       #  |> send_cmd(~s|\rcd "#{dest_path}"|)
