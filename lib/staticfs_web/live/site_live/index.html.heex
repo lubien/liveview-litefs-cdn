@@ -1,0 +1,41 @@
+<.header>
+  Listing Sites
+  <:actions>
+    <.link patch={~p"/sites/new"}>
+      <.button>New Site</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="sites"
+  rows={@streams.sites}
+  row_click={fn {_id, site} -> JS.navigate(~p"/sites/#{site}") end}
+>
+  <:col :let={{_id, site}} label="Name"><%= site.name %></:col>
+  <:action :let={{_id, site}}>
+    <div class="sr-only">
+      <.link navigate={~p"/sites/#{site}"}>Show</.link>
+    </div>
+    <.link patch={~p"/sites/#{site}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, site}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: site.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="site-modal" show on_cancel={JS.patch(~p"/sites")}>
+  <.live_component
+    module={StaticfsWeb.SiteLive.FormComponent}
+    id={@site.id || :new}
+    title={@page_title}
+    action={@live_action}
+    site={@site}
+    patch={~p"/sites"}
+  />
+</.modal>

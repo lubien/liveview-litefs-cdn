@@ -1,0 +1,27 @@
+<.header>
+  Files <%= @files.id %>
+  <:subtitle>This is a files record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/files/#{@files}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit files</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name"><%= @files.name %></:item>
+  <:item title="Content"><%= @files.content %></:item>
+</.list>
+
+<.back navigate={~p"/files"}>Back to files</.back>
+
+<.modal :if={@live_action == :edit} id="files-modal" show on_cancel={JS.patch(~p"/files/#{@files}")}>
+  <.live_component
+    module={StaticfsWeb.FilesLive.FormComponent}
+    id={@files.id}
+    title={@page_title}
+    action={@live_action}
+    files={@files}
+    patch={~p"/files/#{@files}"}
+  />
+</.modal>

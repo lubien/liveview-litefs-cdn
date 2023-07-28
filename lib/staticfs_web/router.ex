@@ -17,7 +17,22 @@ defmodule StaticfsWeb.Router do
   scope "/", StaticfsWeb do
     pipe_through :browser
 
+    get "/:site_id/*page", SiteController, :static
     live "/", PageLive, :home
+
+    # live "/sites", SiteLive.Index, :index
+    # live "/sites/new", SiteLive.Index, :new
+    # live "/sites/:id/edit", SiteLive.Index, :edit
+
+    # live "/sites/:id", SiteLive.Show, :show
+    # live "/sites/:id/show/edit", SiteLive.Show, :edit
+
+    # live "/files", FilesLive.Index, :index
+    # live "/files/new", FilesLive.Index, :new
+    # live "/files/:id/edit", FilesLive.Index, :edit
+
+    # live "/files/:id", FilesLive.Show, :show
+    # live "/files/:id/show/edit", FilesLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.

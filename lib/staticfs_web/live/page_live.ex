@@ -1,7 +1,13 @@
 defmodule StaticfsWeb.PageLive do
   use StaticfsWeb, :live_view
 
+  alias Staticfs.Cdn
+
   def handle_params(_params, _uri, socket) do
+    {:ok, site} = Cdn.create_site(%{
+      name: to_string(Ecto.UUID.generate())
+    })
+
     socket =
       socket
       |> allow_upload(:dir,
@@ -11,7 +17,7 @@ defmodule StaticfsWeb.PageLive do
         max_file_size: 100_000_000,
         progress: &handle_progress/3
       )
-      |> assign(:a, 1)
+      |> assign(:site, site)
 
     {:noreply, socket}
   end
@@ -25,8 +31,11 @@ defmodule StaticfsWeb.PageLive do
   end
 
   def handle_progress(:dir, entry, socket) do
+    # site = Cdn.get_site!(1)
+    site = socket.assigns.site
+
     cwd_dest = Path.join(File.cwd!(), "projects")
-    |> IO.inspect(label: "#{__MODULE__}:#{__ENV__.line} #{DateTime.utc_now}", limit: :infinity)
+
     if entry.done? do
       File.mkdir_p!(cwd_dest)
 
@@ -35,15 +44,31 @@ defmodule StaticfsWeb.PageLive do
           {:ok, [{:zip_comment, []}, {:zip_file, first, _, _, _, _} | _]} =
             :zip.list_dir(~c"#{path}")
 
+          # Cdn.wipe_site_files(site.id)
+
           dest_path = Path.join(cwd_dest, Path.basename(to_string(first)))
           {:ok, paths} = :zip.unzip(~c"#{path}", cwd: ~c"#{cwd_dest}")
+
+          for path <- paths do
+            path = to_string(path)
+            name = String.replace(path, "#{dest_path}/", "")
+            Cdn.create_files(%{
+              site_id: site.id,
+              name: name,
+              content: File.read!(path)
+            })
+          end
+
           {:ok, {dest_path, paths}}
         end)
 
-      assigns = %{dir_name: Path.basename(dest_path)}
-      |> IO.inspect(label: "#{__MODULE__}:#{__ENV__.line} #{DateTime.utc_now}", limit: :infinity)
+      # assigns = %{dir_name: Path.basename(dest_path)}
+      # |> IO.inspect(label: "#{__MODULE__}:#{__ENV__.line} #{DateTime.utc_now}", limit: :infinity)
 
-      {:noreply, assign(socket, assigns)}
+      {:noreply,
+        socket
+        |> redirect(external: ~p"/#{site.name}/")
+      }
       #  |> send_cmd(~s|\rcd "#{dest_path}"|)
       #  |> send_input(~s|fly launch|)
       #  |> put_tip(%Tip{
@@ -62,6 +87,8 @@ defmodule StaticfsWeb.PageLive do
   def render(assigns) do
     ~H"""
     <div id="upload" class="mt-4">
+      site: <%= @site.name %>
+
       <form phx-change="file-selected" phx-submit="upload" class="sr-only">
         <.live_file_input upload={@uploads.dir} class="hidden" />
         <input id="dir" type="file" webkitdirectory={true} phx-hook="ZipUpload" phx-update="ignore" />
